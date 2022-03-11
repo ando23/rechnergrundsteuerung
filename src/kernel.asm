@@ -52,13 +52,40 @@ kinit_cpu:
 	
 	call check_cpu
 	
-	call enable_A20
 	call init_sse
 
+
+kinit_pmode:	; Enter Protected Mode
+
+	mov eax, msg_pmode
+	call kputs
+	call enter_pmode
+	
+kernel_interrupts:
+	mov eax, msg_ints
+	call kputs	; init interrupts
+	call init_IDT
 kinit_done:
 	mov eax, msg_init_done
 	call kputs
 	
+	; Interrupts töten, Karl!
+	sti
+	
+	mov eax, msg_dbg1
+	call kputs
+
+	;jmp kernel_start_external_main
+	jmp kernel_loop
+	;jmp kernel_shutdown
+	
+kernel_loop:
+	nop
+	nop
+	nop
+	nop
+	jmp kernel_loop
+
 kernel_shutdown:
 	mov eax, msg_end
 	call kputs
@@ -87,6 +114,8 @@ kernel_end:
 %include "src/cpu.asm"
 %include "src/textmode.asm"
 %include "src/serial.asm"
+%include "src/memory.asm"
+%include "src/interrupts.asm"
 
 
 section .bss
@@ -101,6 +130,8 @@ msg_hello:	db NL, " [SYS/A v0.1] ", NL, NL, 0
 %define NL 13,10
 msg_ser:	db "[",0x1b,"[33mSYS/A",0x1b,"[36m] Starte ...", NL, 0
 msg_cpu:	db "CPU ...", NL, 0
+msg_pmode:	db "Wechsel in den Protected Mode ...", NL, 0
+msg_ints:	db "Richte Int-Handler ein ...", NL, 0
 msg_init_done:	db "Initialisierung vollstaendig. Viel Spass!", NL, NL, 0
 msg_end:	db "Fahre herunter.", NL, 0
 msg_dbg1:	db "  ",0x1b,"[31;1mDEBUG #1", NL, 0

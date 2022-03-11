@@ -56,7 +56,7 @@ cpuinfonl:	db 13,10,0
 
 enter_pmode:
 	call	enable_A20
-	;call	init_GDT
+	call	init_GDT
 	
 	; enable protected mode
 	mov	eax, cr0
@@ -65,7 +65,7 @@ enter_pmode:
 
 	jmp	08h:kernel_pmode	; set CS
 kernel_pmode:
-	;call	reload_segments	; set other segments
+	call	reload_segments	; set other segments
 
 	ret
 
