@@ -65,6 +65,12 @@ kernel_interrupts:
 	mov eax, msg_ints
 	call kputs	; init interrupts
 	call init_IDT
+
+
+kinit_pit:
+	mov eax, msg_pit
+	call kputs
+	;call init_pit
 kinit_done:
 	mov eax, msg_init_done
 	call kputs
@@ -116,6 +122,7 @@ kernel_end:
 %include "src/serial.asm"
 %include "src/memory.asm"
 %include "src/interrupts.asm"
+%include "src/pit.asm"
 
 
 section .bss
@@ -132,6 +139,7 @@ msg_ser:	db "[",0x1b,"[33mSYS/A",0x1b,"[36m] Starte ...", NL, 0
 msg_cpu:	db "CPU ...", NL, 0
 msg_pmode:	db "Wechsel in den Protected Mode ...", NL, 0
 msg_ints:	db "Richte Int-Handler ein ...", NL, 0
+msg_pit:	db "Initialisiere Timer ...", NL, 0
 msg_init_done:	db "Initialisierung vollstaendig. Viel Spass!", NL, NL, 0
 msg_end:	db "Fahre herunter.", NL, 0
 msg_dbg1:	db "  ",0x1b,"[31;1mDEBUG #1", NL, 0
