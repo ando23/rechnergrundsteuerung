@@ -60,6 +60,17 @@ kputs:
 	pop edi
 	ret
 
+; Newline ausgeben
+; input:	none
+; output:	none
+; clobbers:	none
+kputnl:
+	push eax
+	mov al, 10
+	call kputc
+	pop eax
+	ret
+
 color_on:
 	push edx
 	push eax
@@ -96,9 +107,47 @@ kputhexc:
 	call kputc
 	ret
 
+
+; Hexdump of memory
+; input:	edi	Adresse
+; input:	ecx	Anzahl
+; output:	none
+; clobbers:	none
+kputhd:
+	push eax
+	push ecx
+	push edi
 	
-;	input	eax
+.loop:
+	mov bl, [edi]
+	mov al, bl
+	and al, 0xf
+	call kputhexc
+		
+	rol bl,4
+	mov al, bl
+	and al, 0xf
+	call kputhexc
+
+	mov al, 32
+	call kputc
+	
+	inc edi
+	dec ecx
+	jnz .loop
+	
+	pop edi
+	pop ecx
+	pop eax
+	ret
+
+
+; Wert als Hex ausgeben
+; input:	eax	32-Bit-Wert
+; output:	none
+; clobbers:	none
 kputl:
+	push eax
 	push ebx
 	push eax
 	mov al, '0'
@@ -148,5 +197,6 @@ kputl:
 	call kputhexc
 	
 	pop ebx
+	pop eax
 	ret
 
