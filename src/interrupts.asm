@@ -2,6 +2,7 @@
 ; Licence: MIT
 
 ; Info: https://wiki.osdev.org/IDT
+; Info: https://wiki.osdev.org/Interrupts_tutorial
 
 align 4, db 0
 IDT_Descriptor:
@@ -15,12 +16,10 @@ IDT_Table:
 struc idte_t
 .offsetl:	resw	1
 .segsel:	resw	1
-.reserved:	resb	0
+.reserved:	resb	1
 .flags:	resb	1
 .offseth:	resw	1
 endstruc	
-
-	
 
 
 init_IDT:
@@ -43,6 +42,8 @@ init_IDT:
 	call kputs
 	
 	; remapPIC
+	call RemapPIC
+	
 	OUTB 0x21, 0xfd
 	OUTB 0xa1, 0xff
 	
@@ -79,7 +80,8 @@ init_IDT:
 ;	input	ebx	handler
 ;	clobbers	ebx
 init_IDTE:
-	;push eax	
+	push eax
+	push ebx
 	;shl eax, 3
 	
 	; Segment Selector
@@ -98,7 +100,8 @@ init_IDTE:
 	;	  .xx. ....	DPL
 	;	  1... ....	Present-Flag
 	
-	;pop eax
+	pop ebx
+	pop eax
 	ret
 	
 
@@ -109,7 +112,6 @@ Default_ISR:
 	mov eax, int_msg
 	call puts
 	popad
-	hlt
 	iret
 	
 align 4
