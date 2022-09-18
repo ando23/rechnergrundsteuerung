@@ -33,3 +33,6 @@
 
 # Temporary Files
 *.bak
+
+# Output directory
+out/

@@ -1,7 +1,12 @@
 @echo off
 
-set NASM="C:\Tools\nasm\nasm.exe"
+rem configuration
+	set NASM="C:\Tools\nasm\nasm.exe"
+	set OUT=out
 
-%NASM% -Wall -O0 -f bin src\kernel.asm -o out\kernel.bin
+rem create output dir if not exist
+	if not exist %OUT% mkdir %OUT%
 
-rem %NASM% --version
+rem build it
+	rem %NASM% --version
+	%NASM% -Wall -O0 -f bin src\kernel.asm -o %OUT%\kernel.bin
