@@ -27,6 +27,9 @@ init_IDT:
 	push eax
 	push ebx
 	
+	mov eax, msg_dbg1
+	call kputs
+	
 	mov edi, IDT_Table
 	mov ebx, Default_ISR
 	mov eax, 0
@@ -46,26 +49,31 @@ init_IDT:
 	
 	OUTB 0x21, 0xfd
 	OUTB 0xa1, 0xff
-	
-	lidt [IDT_Descriptor]
 
-	mov eax, msg_dbg3
-	call kputs
+.init_keyboard:
+	mov eax, IDT_Table + 0x21 * 8
+	mov edi, eax
+	mov eax, 0x21
+	mov ebx, ISR_Keyb
+	call init_IDTE
 	
 .make_test_isr:
-	;mov eax, Test_ISR
-	;mov [IDT_Table + 49 * 8 + idte_t.offsetl], ax
-	;mov word [IDT_Table + 49 * 8 + idte_t.segsel], LINEAR_CODE_SELECTOR
-    ;mov word [IDT_Table + 49 * 8 + idte_t.flags], 0x8E00
-    ;shr eax,16
-    ;mov [IDT_Table + 49 * 8 + idte_t.offseth], ax
-	;
-	;mov eax, msg_dbg4
-	;call kputs
-	;int 49
+	mov eax, IDT_Table + 49 * 8
+	mov edi, eax
+	mov eax, 49
+	mov ebx, Test_ISR
+	call init_IDTE
+	
+	mov eax, msg_dbg2
+	call kputs
+
 
 .done:
-	mov eax, msg_dbg1
+	mov eax, msg_dbg3
+	call kputs
+	lidt [IDT_Descriptor]
+	
+	mov eax, msg_dbg4
 	call kputs
 	
 	pop ebx
@@ -85,7 +93,7 @@ init_IDTE:
 	;shl eax, 3
 	
 	; Segment Selector
-	mov word [edi + idte_t.segsel], 0x08	; Ring0-Code
+	mov word [edi + idte_t.segsel], LINEAR_CODE_SELECTOR	; Ring0-Code
 	mov byte [edi + idte_t.reserved], 0x00	; reserved
 	
 	; Offset
@@ -109,27 +117,46 @@ align 4
 Default_ISR:
 	pushad
 	cld
+
+	push eax
+
+	mov ax, LINEAR_DATA_SELECTOR
+	mov gs, ax
+
+	pop eax
+	call kputl
+
 	mov eax, int_msg
-	call puts
+	call kputs
+	
 	popad
 	iret
 	
 align 4
 Test_ISR:
+	pushad
+	cld
 	mov ax, LINEAR_DATA_SELECTOR
 	mov gs, ax
-	mov dword [gs:0xb8000], 'TEST'
-	hlt
+	mov dword [gs:0xb8000], 'T E '
+	mov dword [gs:0xb8004], 'S T '
+	popad
+	iret
 	
 align 4
 ISR_Keyb:
-	pushad
+	push eax
 	cld
+	in al, 60h
+	
 	mov eax, int_keyb_msg
 	call puts
-	popad
-	OUTB 0x20, 0x20
-	OUTB 0xa0, 0x20
+
+	mov al, 20h
+	out 20h, al
+	;OUTB 0x20, 0x20
+	;OUTB 0xa0, 0x20
+	pop eax
 	iret
 
 

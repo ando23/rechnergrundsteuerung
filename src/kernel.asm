@@ -45,7 +45,7 @@ kinit_ser:
 	call init_kcom
 	mov eax, msg_ser
 	call kputs
-	
+
 kinit_cpu:
 	mov eax, msg_cpu
 	call kputs
@@ -66,11 +66,11 @@ kernel_interrupts:
 	call kputs	; init interrupts
 	call init_IDT
 
-
 kinit_pit:
-	mov eax, msg_pit
-	call kputs
+	;mov eax, msg_pit
+	;call kputs
 	;call init_pit
+
 kinit_done:
 	mov eax, msg_init_done
 	call kputs
@@ -80,11 +80,35 @@ kinit_done:
 	
 	mov eax, msg_dbg1
 	call kputs
+	
+	int 49
 
 	;jmp kernel_start_external_main
-	jmp kernel_loop
+	;jmp kernel_loop
 	;jmp kernel_shutdown
+
+kernel_demo:
+	mov edi, 0xB8000 + 20 * 160
+	mov bx, 0x4041
+	mov cx, 0x3042
+	mov eax, 0
 	
+	.loop1:
+		mov word [edi + eax], bx
+		add ax, 2
+		cmp ax, 160
+		jne .loop1
+		mov ax, 0
+	
+	.loop2:
+		mov word [edi + eax], cx
+		add ax, 2
+		cmp ax, 160
+		jne .loop2
+		mov ax, 0
+		
+	jmp .loop1
+
 kernel_loop:
 	nop
 	nop
@@ -120,6 +144,7 @@ kernel_end:
 %include "src/cpu.asm"
 %include "src/textmode.asm"
 %include "src/serial.asm"
+%include "src/pic.asm"
 %include "src/memory.asm"
 %include "src/interrupts.asm"
 %include "src/pit.asm"
