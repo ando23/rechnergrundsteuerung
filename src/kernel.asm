@@ -54,6 +54,14 @@ kinit_cpu:
 	
 	call init_sse
 
+kinit_rtc:
+	mov eax, msg_init_rtc
+	call kputs
+	call init_rtc
+	call rtc_update
+	call rtc_print
+	mov eax, 123
+	call kputb_dec
 
 kinit_pmode:	; Enter Protected Mode
 
@@ -67,9 +75,9 @@ kernel_interrupts:
 	call init_IDT
 
 kinit_pit:
-	;mov eax, msg_pit
-	;call kputs
-	;call init_pit
+	mov eax, msg_pit
+	call kputs
+	call init_pit
 
 kinit_done:
 	mov eax, msg_init_done
@@ -92,6 +100,7 @@ kernel_demo:
 	mov bx, 0x4041
 	mov cx, 0x3042
 	mov eax, 0
+	mov edx, 0
 	
 	.loop1:
 		mov word [edi + eax], bx
@@ -106,6 +115,14 @@ kernel_demo:
 		cmp ax, 160
 		jne .loop2
 		mov ax, 0
+
+	inc edx
+	cmp edx, 100000
+	jl .loop1
+	
+	xor edx, edx
+	call rtc_update
+	call rtc_print
 		
 	jmp .loop1
 
@@ -141,13 +158,22 @@ kernel_halt:
 
 kernel_end:
 
+%line 1000
 %include "src/cpu.asm"
+%line 2000
 %include "src/textmode.asm"
+%line 3000
 %include "src/serial.asm"
+%line 4000
 %include "src/pic.asm"
+%line 5000
 %include "src/memory.asm"
+%line 6000
 %include "src/interrupts.asm"
+%line 7000
 %include "src/pit.asm"
+%line 8000
+%include "src/rtc.asm"
 
 
 section .bss
@@ -165,6 +191,7 @@ msg_cpu:	db "CPU ...", NL, 0
 msg_pmode:	db "Wechsel in den Protected Mode ...", NL, 0
 msg_ints:	db "Richte Int-Handler ein ...", NL, 0
 msg_pit:	db "Initialisiere Timer ...", NL, 0
+msg_init_rtc:	db "Uhr einstellen...", NL, 0
 msg_init_done:	db "Initialisierung vollstaendig. Viel Spass!", NL, NL, 0
 msg_end:	db "Fahre herunter.", NL, 0
 msg_dbg1:	db "  ",0x1b,"[31;1mDEBUG #1", NL, 0
@@ -172,3 +199,5 @@ msg_dbg2:	db "  ",0x1b,"[31;1mDEBUG #2", NL, 0
 msg_dbg3:	db "  ",0x1b,"[31;1mDEBUG #3", NL, 0
 msg_dbg4:	db "  ",0x1b,"[31;1mDEBUG #4", NL, 0
 msg_dbg5:	db "  ",0x1b,"[31;1mDEBUG #5", NL, 0
+
+
