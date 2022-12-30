@@ -1,5 +1,6 @@
 ; Copyright 2022 Andreas Herzig
 ; Licence: MIT
+%line 3003
 
 COM1	equ	0x3F8
 COM2	equ	0x2F8
@@ -9,6 +10,8 @@ COM4	equ	0x2E8
 PORT	equ	0x3F8
 
 init_kcom:
+	push eax
+	push edx
 	OUTB (PORT + 1), 0x00	; Disable all interrupts
 	OUTB (PORT + 3), 0x80	; Enable DLAB (set baud rate divisor)
 	OUTB (PORT + 0), 0x03	; Set divisor to 3 (lo byte) 38400 baud
@@ -25,14 +28,21 @@ init_kcom:
 	je .step2
 	
 	;FIXME Log error
-	ret
+	jmp .done
  
 .step2:
 	; If serial is not faulty set it in normal operation mode
 	; (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
 	OUTB PORT + 4, 0x0F
+.done:
+	pop edx
+	pop eax
 	ret
 
+; Ein Zeichen ausgeben
+; input:	al
+; output:	none
+; clobbers:	none	
 kputc:
 	push eax
 .is_busy:
@@ -41,11 +51,18 @@ kputc:
 	and al, 0x20
 	jz .is_busy
 	pop eax
+	push edx
 	OUTB PORT, al
+	pop edx
 	ret
-	
+
+; String ausgeben
+; input:	eax
+; output:	none
+; clobbers:	none	
 kputs:
 	push edi
+	push eax
 	mov edi, eax
 	call color_on	
 .loop:
@@ -57,8 +74,30 @@ kputs:
 	jmp .loop
 .end:
 	call color_off
+	pop eax
 	pop edi
 	ret
+
+; String ausgeben
+; input:	eax
+; output:	none
+; clobbers:	none	
+kputs2:
+	push edi
+	push eax
+	mov edi, eax
+.loop:
+	mov al, [edi]
+	cmp al,0
+	je .end
+	call kputc
+	inc edi
+	jmp .loop
+.end:
+	pop eax
+	pop edi
+	ret
+
 
 ; Newline ausgeben
 ; input:	none
@@ -88,6 +127,18 @@ color_off:
 	OUTB PORT, 0x1b
 	OUTB PORT, '['
 	OUTB PORT, '0'
+	OUTB PORT, 'm'
+	pop eax
+	pop edx
+	ret
+
+color2_on:
+	push edx
+	push eax
+	OUTB PORT, 0x1b
+	OUTB PORT, '['
+	OUTB PORT, '3'
+	OUTB PORT, '2'
 	OUTB PORT, 'm'
 	pop eax
 	pop edx
@@ -200,3 +251,96 @@ kputl:
 	pop eax
 	ret
 
+
+; Wert als Hex ausgeben
+; input:	al	8-Bit-Wert
+; output:	none
+; clobbers:	none
+kputb:
+	push eax
+	push ebx
+	mov bl, al
+	mov al, '0'
+	call kputc
+	mov al, 'x'
+	call kputc
+	
+	rol bl,4
+	mov al, bl
+	and al, 0xf
+	call kputhexc
+	
+	rol bl,4
+	mov al, bl
+	and al, 0xf
+	call kputhexc
+
+	pop ebx
+	pop eax
+	ret
+
+kputb_dec_buf: db '0',0,0,0
+
+; Wert dezimal ausgeben
+; input:	al	8-Bit-Wert
+; output:	none
+; clobbers:	none
+kputb_dec:
+	push eax
+	push ebx
+	push ecx
+	push edx
+	push edi
+	
+	mov ebx, '0'
+	mov [kputb_dec_buf], ebx
+
+	mov ebx, eax
+
+	xor eax, eax
+	mov al, bl
+	
+	xor edx, edx	; edx := 0
+	xor ecx, ecx	; ecx := 0
+	mov ebx, 10	; 
+	div ebx	; eax := (EDX:EAX / EBX), edx := (EDX:EAX % EBX)
+
+	mov cl, dl
+	
+	xor edx, edx
+	div ebx
+	
+	mov ch, dl
+	
+	mov edi, kputb_dec_buf
+	
+	cmp al, byte 0
+	je .st2
+
+	add al, byte '0'
+	mov [edi], al
+	inc edi
+	
+.st2:
+	cmp ch, byte 0
+	je .st3
+	
+	add ch, byte '0'
+	mov [edi], ch
+	inc edi
+
+.st3:
+	add cl, '0'
+	mov [edi], cl
+	inc edi
+	mov [edi], byte 0
+	
+	mov eax, kputb_dec_buf
+	call kputs2
+		
+	pop edi
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax
+	ret
