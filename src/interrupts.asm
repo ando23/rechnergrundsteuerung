@@ -162,16 +162,30 @@ Test_ISR:
 align 4
 ISR_Keyb:
 	push eax
+	push edx
 	cld
 	in al, 60h
 	
+	mov edx, eax
+	
 	mov eax, int_keyb_msg
 	call puts
+	
+	mov eax, edx
+	
+	;TODO translate keycode to keychar	
+	call puthexc
+	
+	mov al, 10
+	call putc
+	
+	; push into key queue
 
 	mov al, 20h
 	out 20h, al
 	;OUTB 0x20, 0x20
 	;OUTB 0xa0, 0x20
+	pop edx
 	pop eax
 	iret
 
@@ -209,6 +223,6 @@ exc_0d_handler:
 
 
 int_msg:	db "Hallo Interrupt!", 10, 0
-int_keyb_msg:	db "Hallo Keyboard!", 10, 0
+int_keyb_msg:	db "Hallo Keyboard: ", 0
 msg_int_test:	db "Test-Interrupt ist hier.", 10, 0
 

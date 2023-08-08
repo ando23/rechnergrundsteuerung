@@ -1,4 +1,4 @@
-; Copyright 2022 Andreas Herzig
+; Copyright 2022-2023 Andreas Herzig
 ; Licence: MIT
 
 [bits 32]
@@ -93,7 +93,7 @@ kinit_done:
 	;jmp kernel_shutdown
 
 kernel_demo:
-	mov edi, 0xB8000 + 20 * 160
+	mov edi, 0xB8000 ;+ 20 * 160
 	mov bx, 0x4041
 	mov cx, 0x3042
 	mov eax, 0
@@ -119,7 +119,7 @@ kernel_demo:
 	
 	xor edx, edx
 	call rtc_update
-	call rtc_print
+	call rtc_print2
 	
 	call pit_print
 	

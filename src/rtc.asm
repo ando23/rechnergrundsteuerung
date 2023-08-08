@@ -129,5 +129,30 @@ rtc_print:
 	pop eax
 	ret
 
+rtc_print2:
+	push eax
+	
+	mov ebp, esp
+	xor eax, eax
+	mov al, [rtc_sec]
+	push eax
+	mov al, [rtc_min]
+	push eax
+	mov al, [rtc_hr]
+	push eax
+	mov al, [rtc_day]
+	push eax
+	mov al, [rtc_mon]
+	push eax
+	mov al, [rtc_year]
+	push eax
+	
+	mov eax, msg_rtc2
+	call kprintf
+	mov esp, ebp
+	
+	pop eax
+	ret
 
 msg_rtc:	db "Aktuelle Zeit: ",0
+msg_rtc2:	db "Aktuelle Zeit: 20%d-%d-%d %d:%d:%d",10,0
