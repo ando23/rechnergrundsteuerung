@@ -1,0 +1,13 @@
+WSL with Ubuntu
+
+sudo apt install nasm
+sudo apt install make
+sudo apt install qemu
+sudo apt install qemu-system
+
+To compile:
+	make
+	
+To run:
+	make run
+

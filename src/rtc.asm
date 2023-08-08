@@ -124,12 +124,10 @@ rtc_print:
 	mov al, [rtc_sec]
 	call kputb_dec
 	
-	mov eax, msg_rtc2
-	call kputs
+	call kputnl
 	
 	pop eax
 	ret
 
 
 msg_rtc:	db "Aktuelle Zeit: ",0
-msg_rtc2:	db 13,10, 0

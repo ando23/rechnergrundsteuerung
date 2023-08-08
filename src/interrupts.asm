@@ -66,7 +66,18 @@ init_IDT:
 	
 	mov eax, msg_dbg2
 	call kputs
-
+	
+.init_pit:
+	mov eax, IDT_Table + 0x20 * 8
+	mov edi, eax
+	mov eax, 0x20
+	mov ebx, ISR_pit
+	call init_IDTE
+	mov eax, IDT_Table + 0x28 * 8
+	mov edi, eax
+	mov eax, 0x28
+	mov ebx, ISR_pit
+	call init_IDTE
 
 .done:
 	mov eax, msg_dbg3
@@ -136,10 +147,15 @@ align 4
 Test_ISR:
 	pushad
 	cld
+	
 	mov ax, LINEAR_DATA_SELECTOR
 	mov gs, ax
 	mov dword [gs:0xb8000], 'T E '
 	mov dword [gs:0xb8004], 'S T '
+	
+	mov eax, msg_int_test
+	call kputs
+	
 	popad
 	iret
 	
@@ -194,3 +210,5 @@ exc_0d_handler:
 
 int_msg:	db "Hallo Interrupt!", 10, 0
 int_keyb_msg:	db "Hallo Keyboard!", 10, 0
+msg_int_test:	db "Test-Interrupt ist hier.", 10, 0
+

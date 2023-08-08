@@ -13,7 +13,7 @@ _start:
 	xor    ebx, ebx	; we are not loaded by GRUB.
 	jmp    kernel_start	; Jump over the multiboot header
 
-%include "src\multiboot1.asm"
+%include "src/multiboot1.asm"
 
 kernel_start:
 	cli
@@ -63,21 +63,20 @@ kinit_rtc:
 	mov eax, 123
 	call kputb_dec
 
-kinit_pmode:	; Enter Protected Mode
-
+kinit_pmode:  ; Enter Protected Mode
 	mov eax, msg_pmode
 	call kputs
 	call enter_pmode
-	
-kernel_interrupts:
-	mov eax, msg_ints
-	call kputs	; init interrupts
-	call init_IDT
 
 kinit_pit:
 	mov eax, msg_pit
 	call kputs
 	call init_pit
+	
+kernel_interrupts:
+	mov eax, msg_ints
+	call kputs	; init interrupts
+	call init_IDT
 
 kinit_done:
 	mov eax, msg_init_done
@@ -86,9 +85,7 @@ kinit_done:
 	; Interrupts töten, Karl!
 	sti
 	
-	mov eax, msg_dbg1
-	call kputs
-	
+	; Einen Software-Interrupt auslösen:
 	int 49
 
 	;jmp kernel_start_external_main
@@ -123,7 +120,9 @@ kernel_demo:
 	xor edx, edx
 	call rtc_update
 	call rtc_print
-		
+	
+	call pit_print
+	
 	jmp .loop1
 
 kernel_loop:
@@ -139,15 +138,7 @@ kernel_shutdown:
 	jmp kernel_halt
 
 
-kernel_fail:
-	; hier Bluescreen of death :-)
-	mov word [0xB8000], 0x4020
-	mov word [0xB8002], 0x4046
-	mov word [0xB8004], 0x4061
-	mov word [0xB8006], 0x4069
-	mov word [0xB8008], 0x406c
-	mov word [0xB800A], 0x4020
-	jmp kernel_halt
+%include "src/kernel.bluescreen.asm"
 
 
 kernel_halt:
@@ -182,6 +173,7 @@ kstack:
 	resb KSTACK_SIZE
 kstack_top:
 
+; %include "src/kernel.strings.asm"
 section .data
 %define NL 10
 msg_hello:	db NL, " [SYS/A v0.1] ", NL, NL, 0

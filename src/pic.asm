@@ -3,7 +3,6 @@
 
 ; Info: https://wiki.osdev.org/IDT
 ; Info: https://wiki.osdev.org/PIC
-; Info: https://github.com/ando23/YoutubeOS/blob/master/IO.cpp
 
 PIC1_COMMAND	equ 0x20
 PIC1_DATA	equ 0x21
