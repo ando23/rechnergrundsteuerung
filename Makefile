@@ -13,3 +13,5 @@ run: out/kernel.bin
 	#set DBGTRIFAULT=-no-shutdown -no-reboot -d int
 	qemu-system-i386 -kernel out/kernel.bin -m 16m  -serial stdio -rtc base=localtime
 
+install-qemu:
+	sudo apt install qemu-system
