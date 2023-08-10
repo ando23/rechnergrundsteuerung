@@ -91,6 +91,7 @@ kinit_done:
 	;jmp kernel_start_external_main
 	;jmp kernel_loop
 	;jmp kernel_shutdown
+	;jmp initTasks
 
 kernel_demo:
 	mov edi, 0xB8000 + 20 * 160
@@ -165,7 +166,8 @@ kernel_end:
 %include "src/pit.asm"
 %line 8000
 %include "src/rtc.asm"
-
+%line 9000
+%include "src/tasks.asm"
 
 section .bss
 align 32
