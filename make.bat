@@ -14,4 +14,3 @@ rem build it
 	%NASM% -Wall -O0 -f bin src\kernel.asm -o %OUT%\kernel.bin
 
 	rem popd
-	
