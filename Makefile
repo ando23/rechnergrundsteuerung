@@ -5,8 +5,20 @@ out/kernel.bin: $(wildcard src/*.asm)
 	#mkdir out
 	nasm -Wall -O0 -f bin src/kernel.asm -o out/kernel.bin
 
+obj/boot.o: $(wildcard src/*.asm)
+	#mkdir out
+	#nasm -Wall -O0 -f bin src/kernel.asm -o obj/boot.o
+	nasm -Wall -O0 -felf32 src/kernel.asm -o obj/boot.o
+	
+obj/test.o: src/test.c
+	gcc -c src/test.c -o obj/test.o -std=gnu99 -ffreestanding -O2 -Wall -extra
+
+link: obj/boot.o obj/test.o
+	gcc -T linker.ld -o out/kernel2.bin -ffreestanding -O2 -nostdlib obj/boot.o obj/test.o -lgcc
+
 clean:
 	rm -f out/kernel.bin
+	rm -f obj/*.obj
 
 run: out/kernel.bin
 	#set QEMU="C:\Tools\qemu\qemu-system-i386.exe"
@@ -15,3 +27,7 @@ run: out/kernel.bin
 
 install-qemu:
 	sudo apt install qemu-system
+
+verify: out/kernel.bin
+	grub-file --is-x86-multiboot out/kernel.bin
+	echo $?
