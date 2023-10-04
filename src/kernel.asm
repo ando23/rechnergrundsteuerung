@@ -2,7 +2,7 @@
 ; Licence: MIT
 
 [bits 32]
-[org 0x100000]
+;[org 0x100000]
 [global _start]
 
 KSTACK_SIZE	equ	4096
