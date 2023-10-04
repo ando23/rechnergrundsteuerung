@@ -2,6 +2,7 @@
 
 A hobbyist operating system by me and for me.
 
+
 ## Current State
 
 Don't bother. It barely runs and then does not do anything useful either.
@@ -19,15 +20,18 @@ No spoon. Also no fork.
 ## How to build
 
 ### Requirements
-Future versions will probably require a cross-compiling gcc, but for now this will suffice:
+After the switch to C, you will need these tools:
 * QEMU
 * NASM
+* GCC
+* Make
+For Windows, you will need WSL aswell.
 
 
 ### Instructions
-Edit the batch files make.bat and run.bat to set the paths to your local copies of nasm and qemu.
-* run make.bat to compile
-* run run.bat to start the system in QEMU
+Install the tools in WSL or your favourite flavour of Unix and then
+* make
+* make run
 
 
 ## How to contribute
