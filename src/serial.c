@@ -1,6 +1,10 @@
 // Copyright 2022 Andreas Herzig
 // Licence: MIT
 
+#include "serial.h"
+
+#include "cpu.h"
+
 #define COM1	0x3F8
 #define COM2	0x2F8
 #define COM3	0x3E8
@@ -12,25 +16,20 @@
 #define uint16_t	unsigned short
 #define uint32_t	unsigned int
 
-void kputs2(char* s);
-
-void out8(uint16_t port, uint8_t value);
-uint8_t in8(uint16_t port);
-
 
 void init_kcom() {
-	out8(PORT + 1, 0x00);	// Disable all interrupts
-	out8(PORT + 3, 0x80);	// Enable DLAB (set baud rate divisor)
-	out8(PORT + 0, 0x03);	// Set divisor to 3 (lo byte) 38400 baud
-	out8(PORT + 1, 0x00);	//                  (hi byte)
-	out8(PORT + 3, 0x03);	// 8 bits, no parity, one stop bit
-	out8(PORT + 2, 0xC7);	// Enable FIFO, clear them, with 14-byte threshold
-	out8(PORT + 4, 0x0B);	// IRQs enabled, RTS/DSR set
-	out8(PORT + 4, 0x1E);	// Set in loopback mode, test the serial chip
-	out8(PORT + 0, 0xAE);	// Test serial chip (send byte 0xAE and check if serial returns same byte)
+	cpu_out8(PORT + 1, 0x00);	// Disable all interrupts
+	cpu_out8(PORT + 3, 0x80);	// Enable DLAB (set baud rate divisor)
+	cpu_out8(PORT + 0, 0x03);	// Set divisor to 3 (lo byte) 38400 baud
+	cpu_out8(PORT + 1, 0x00);	//                  (hi byte)
+	cpu_out8(PORT + 3, 0x03);	// 8 bits, no parity, one stop bit
+	cpu_out8(PORT + 2, 0xC7);	// Enable FIFO, clear them, with 14-byte threshold
+	cpu_out8(PORT + 4, 0x0B);	// IRQs enabled, RTS/DSR set
+	cpu_out8(PORT + 4, 0x1E);	// Set in loopback mode, test the serial chip
+	cpu_out8(PORT + 0, 0xAE);	// Test serial chip (send byte 0xAE and check if serial returns same byte)
 
 	// Check if serial is faulty (i.e: not same byte as sent)
-	uint8_t inp = in8( PORT );
+	uint8_t inp = cpu_in8( PORT );
 	if (inp != 0xAE) {
 		//FIXME Log error
 		return;
@@ -38,7 +37,7 @@ void init_kcom() {
 	
 	// If serial is not faulty set it in normal operation mode
 	// (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
-	out8(PORT + 4, 0x0F);
+	cpu_out8(PORT + 4, 0x0F);
 }
 
 // Ein Zeichen ausgeben
@@ -47,11 +46,11 @@ void kputc(uint8_t al) {
 	uint8_t state;
 	while (1) {
 		// Prüfe ob bereit
-		state = in8( PORT+5 );
+		state = cpu_in8( PORT+5 );
 		state &= 0x20;
 		if (state != 0) break;
 	}
-	out8( PORT, al );
+	cpu_out8( PORT, al );
 }
 
 void color_on()
@@ -127,7 +126,7 @@ void kputl(uint32_t eax) {
 		uint32_t v = eax >> (4*i);
 		kputhexc( (uint8_t)(v & 0xff) );
 	}
-}+
+}
 
 // Hexdump of memory
 void kputhd(void* adresse, uint32_t anzahl) {

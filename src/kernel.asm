@@ -87,6 +87,11 @@ kinit_done:
 	
 	; Einen Software-Interrupt auslösen:
 	int 49
+	
+	
+	;push multiboot1_result
+	;push multiboot1_infoptr
+	;call kernel_main
 
 	;jmp kernel_start_external_main
 	;jmp kernel_loop

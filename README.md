@@ -25,6 +25,7 @@ After the switch to C, you will need these tools:
 * NASM
 * GCC
 * Make
+
 For Windows, you will need WSL aswell.
 
 
