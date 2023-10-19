@@ -61,11 +61,14 @@ void kernel_main(uint32_t mbresponse, struct multiboot1_infoptr* infos) {
 	cpu_enable_interrupts(); //	sti
 	
 	// Einen Software-Interrupt auslösen:
-	//int 49
+	//cpu_call_interrupt(49);
 
-	//kernel_loop();
+	// Scheduler
+	//init_scheduler();
+
+	kernel_loop();
 	//kernel_shutdown();
-	kernel_demo();
+	//kernel_demo();
 }
 
 /*

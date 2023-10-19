@@ -9,6 +9,10 @@ void cpu_enable_interrupts() {
 	asm("sti");
 }
 
+void cpu_call_interrupt(uint16_t intNo) {
+	asm("int 49");
+}
+
 void cpu_halt() {
 	asm("hlt");
 }

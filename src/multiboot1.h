@@ -30,13 +30,52 @@ struct multiboot1_header {
 	uint32_t kernel_start;	// starting point
 
 	// Grub VGA
-	uint32_t _vga0;
-	uint32_t _vga1;
-	uint32_t _vga2;
-	uint32_t _vga3;
+	uint32_t _vga_mode;
+	uint32_t _vga_width;
+	uint32_t _vga_height;
+	uint32_t _vga_depth;
 };
 
 struct multiboot1_infoptr {
-	uint32_t magic;
+	uint32_t flags;
+	
+	uint32_t mem_lower;		// requires flags[0]
+	uint32_t mem_higher;	// requires flags[0]
+	
+	uint32_t boot_device;	// requires flags[1]
+	
+	uint32_t cmdline;		// requires flags[2]
+	
+	uint32_t mods_count;	// requires flags[3]
+	uint32_t mods_addr;		// requires flags[3]
+	
+	char syms[12];			// flags[4] || flags[5]
+	
+	uint32_t mmap_length;	// requires flags[6]
+	uint32_t mmap_addr;		// requires flags[6]
+	
+	uint32_t drives_length;	// requires flags[7]
+	uint32_t drives_addr;	// requires flags[7]
+	
+	uint32_t config_table;	// requires flags[8]
+	
+	uint32_t boot_loader_name;	// requires flags[9]
+	
+	uint32_t apm_table;		// requires flags[10]
+	
+	uint32_t vbe_ctrl_info;	// requires flags[11]
+	uint32_t vbe_mode_info;	//
+	uint32_t vbe_mode;		//
+	uint32_t vbe_if_seg;	//
+	uint32_t vbe_if_off;	//
+	uint32_t vbe_if_len;	//
+	
+	uint64_t fb_addr;		// requires flags[12]
+	uint32_t fb_pitch;		//
+	uint32_t fb_width;		//
+	uint32_t fb_height;		//
+	uint8_t fb_bpp;		//
+	uint8_t fb_type;		//
+	uint8_t fb_color_info[5];	//TODO in union umbauen
 };
 
