@@ -2,13 +2,14 @@ ENTRY(_start)
 
 SECTIONS
 {
-	. = 1M;
+	. = 2M;
 	
 	tag_start = .;
 	
 	.text BLOCK(4K) : ALIGN(4K)
 	{
-		*(.multiboot)
+		. = ALIGN(8);
+		KEEP(*(.multiboot))
 		*(.text)
 	}
 	

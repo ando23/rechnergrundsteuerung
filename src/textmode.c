@@ -4,9 +4,9 @@
 #include "textmode.h"
 
 #include "cpu.h"
-#include "memory.h"
+#include "string.h"
 
-#define KTEXTMEM	0xB8000
+#define KTEXTMEM	((char*)0xB8000)
 #define KTEXTMAXX	80
 #define KTEXTMAXY	25
 
@@ -17,8 +17,8 @@ uint8_t cursor_col = 0x17;
 
 
 void clrscr() {
-	uint16_t v = (cursor_col << 8) + 0x20;
-	memset16(KTEXTMEM, v, 80*25);
+	uint16_t v = (cursor_col << 8) + ' ';
+	memset16(KTEXTMEM, v, KTEXTMAXX * KTEXTMAXY);
 }
 
 void disable_cursor() {
@@ -30,21 +30,18 @@ void set_color(uint8_t col) {
 	cursor_col = col;
 }
 
+void set_cursor_position(uint16_t x, uint16_t y)
+{
+	if (x > KTEXTMAXX-1) x = KTEXTMAXX-1;
+	if (y > KTEXTMAXY-1) y = KTEXTMAXY-1;
+
+	cursor_x = x;
+	cursor_y = y;
+}
+
+
 // Output a single character
 void putc(uint8_t c) {
-	if (c == 10) {	// NL auswerten
-		cursor_x = 0;
-		cursor_y++;
-	}
-	else if (c == 13) {	// CR auswerten
-		cursor_x = 0;
-	}
-	else if (c >= 32) {
-		uint16_t value = (cursor_col << 8) + c;
-		VMEM[ cursor_y * KTEXTMAXX + cursor_x ] = value;
-		cursor_x++;
-	}
-	
 	if (cursor_x >= KTEXTMAXX) {
 		cursor_x = 0;
 		cursor_y++;
@@ -52,6 +49,19 @@ void putc(uint8_t c) {
 	if (cursor_y >= KTEXTMAXY) {
 		scrollup();
 		cursor_y = (KTEXTMAXY-1);
+	}
+	
+	if (c == '\n') { // NL auswerten
+		cursor_x = 0;
+		cursor_y++;
+	}
+	else if (c == '\r') { // CR auswerten
+		cursor_x = 0;
+	}
+	else if (c >= 32) {
+		uint16_t value = (cursor_col << 8) + c;
+		VMEM[ cursor_y * KTEXTMAXX + cursor_x ] = value;
+		cursor_x++;
 	}
 }
 
@@ -61,6 +71,7 @@ void puts(const char* psz) {
 	for (; *psz; psz++) {
 		putc(*psz);
 	}
+	putc('\n');
 }
 
 
@@ -82,7 +93,7 @@ void putl(uint32_t value) {
 
 	for (int i=4; i>=0; i--) {
 		uint32_t v = value >> (4*i);
-		kputhexc( (uint8_t)(v & 0xff) );
+		puthexc( (uint8_t)(v & 0xff) );
 	}
 }
 
@@ -98,112 +109,29 @@ void putld(uint32_t value) {
 		return;
 	}
 	
-	//char buffer[16];
-	//snprintf( buffer, sizeof(buffer), "%d", value );
-	//puts(buffer);
+	char buffer[16];
+	snprintf( buffer, sizeof(buffer), "%d", value );
+	puts(buffer);
 }
 
 
 // Scroll the entire screen up one line and fill the bottom one with blanks
 void scrollup() {
-	memmove( KTEXTMEM + 2*80, KTEXTMEM, 2*80*24 );
-	uint16_t v = (cursor_col << 8) + 0x20;
-	memset16( KTEXTMEM + 2*80*24, v, 2*80);
+	//memmove( KTEXTMEM, KTEXTMEM + 2*KTEXTMAXX, 2*KTEXTMAXX*(KTEXTMAXY-1) );
+	memmove( KTEXTMEM + 2*KTEXTMAXX, KTEXTMEM + 4*KTEXTMAXX, 2*KTEXTMAXX*(KTEXTMAXY-2) );
+	uint16_t v = (cursor_col << 8) + ' ';
+	memset16( KTEXTMEM + 2*KTEXTMAXX*(KTEXTMAXY-1), v, 2*KTEXTMAXX);
 }
 
 
-// Display formatted text / non-standard makros!
-//	input	eax	Formatstring
-//			%d	u32	dez
-//			%w	u16	dez
-//			%b	u8	dez
-//			%D	u32	hex
-//			%W	u16	hex
-//			%B	u8	hex
-//			%p	u32	hex (pointer)
-//			%s	string
-//	clobbers	eax
 void printf(const char* pszFormat, ...) {
-/*	
-	push edi
-	push ebp
-	push ebx
-	mov ebx, esp
-	add ebx, 12
-	mov ebp, ebx
+	char pszBuffer[1024];
+	memset(pszBuffer, 0, sizeof(pszBuffer));
 	
-	mov edi, eax
-.loop:
-	mov al, [edi]
-	cmp al, 0
-	je .end
+	// snprintf( pszBuffer, sizeof(pszBuffer), pszFormat, va... );
 	
-	cmp al, '%'
-	je .makro
-
-.disp:
-	call putc
-.next:
-	inc edi
-	jmp .loop
-
-.makro:
-	inc edi
-	mov al, [edi]
-	cmp al, 0
-	je .end
-	cmp al, '%'
-	je .disp
-	cmp al, 'd'
-	je .disp_u32
-	cmp al, 'b'
-	je .disp_u8
-	cmp al, 'p'
-	je .disp_p
-	jmp .next
-
-.disp_u8:
-	push eax
-	add ebp, 1
-	mov eax, 0
-	mov al, byte [ebp]
-	call putld
-	pop eax
-	jmp .next
-
-.disp_u32:
-	push eax
-	add ebp, 4
-	mov eax, [ebp]
-	call putld
-	pop eax
-	jmp .next
-	
-.disp_p:
-	push eax
-	add ebp, 4
-	mov eax, [ebp]
-	call putl
-	pop eax
-	jmp .next
-
-.disp_s:
-	push eax
-	add ebp, 4
-	mov eax, [ebp]
-	call puts
-	pop eax
-	jmp .next
-	
-.end:
-	pop ebx
-	pop ebp
-	pop edi
-*/	
+	puts(pszBuffer);
 }
-
-
-
 
 
 /* ---- Authors (in alphabetical order) ----

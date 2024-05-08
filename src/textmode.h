@@ -13,6 +13,8 @@ void disable_cursor();
 
 void set_color(uint8_t col);
 
+void set_cursor_position(uint16_t x, uint16_t y);
+
 // Output a single character
 void putc(uint8_t c);
 
@@ -41,7 +43,6 @@ void scrollup();
 //			%B	u8	hex
 //			%p	u32	hex (pointer)
 //			%s	string
-//	clobbers	eax
 void printf(const char* pszFormat, ...);
 
 

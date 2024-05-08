@@ -1,9 +1,10 @@
-// Copyright 2022 Andreas Herzig
+// Copyright 2022-2024; for authors see bottom
 // Licence: MIT
 
 #include "serial.h"
 
 #include "cpu.h"
+#include "string.h"
 
 #define COM1	0x3F8
 #define COM2	0x2F8
@@ -53,8 +54,7 @@ void kputc(uint8_t al) {
 	cpu_out8( PORT, al );
 }
 
-void color_on()
-{
+void color_on() {
 	kputc( 0x1b );
 	kputc( '[' );
 	kputc( '3' );
@@ -89,7 +89,7 @@ void kputs(char* s) {
 // String ausgeben
 // input:	s
 void kputs2(char* s) {
-	while (s) {
+	while (*s) {
 		kputc(*s);
 		s++;
 	}
@@ -98,7 +98,8 @@ void kputs2(char* s) {
 // Newline ausgeben
 // input:	none
 void kputnl() {
-	kputc( 10 );
+	kputc( '\r' );
+	kputc( '\n' );
 }
 
 
@@ -132,7 +133,7 @@ void kputl(uint32_t eax) {
 void kputhd(void* adresse, uint32_t anzahl) {
 	//TODO schön machen
 	uint8_t* ptr = (uint8_t*)adresse;
-	for (int i=0; i<anzahl; i++) {
+	for (uint32_t i=0; i<anzahl; i++) {
 		if ((i&16) == 0) {
 			kputl(*((uint32_t*)ptr));
 			kputc(0x20);
@@ -184,3 +185,17 @@ void kputb_dec(uint8_t al) {
 	//*pout = 0;
 	//kputs( kputb_dec_buf );
 }
+
+void kprintf(const char* pszFormat, ...) {
+	char pszBuffer[1024];
+	memset(pszBuffer, 0, sizeof(pszBuffer));
+	
+	// snprintf( pszBuffer, sizeof(pszBuffer), pszFormat, va... );
+	
+	kputs(pszBuffer);
+}
+
+
+/* ---- Authors (in alphabetical order) ----
+ * Andreas Herzig
+ */
