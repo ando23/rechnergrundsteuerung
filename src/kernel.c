@@ -10,6 +10,7 @@
 #include "idt.h"
 #include "memory.h"
 #include "multiboot1.h"
+#include "pci.h"
 #include "pit.h"
 #include "rtc.h"
 #include "serial.h"
@@ -65,7 +66,7 @@ void kernel_main(uint32_t mbresponse, multiboot1_infoptr* infos) {
 	kputs("* Initializing RTC\n");
 	rtc_init();
 	rtc_update();
-	rtc_print();
+	//rtc_print();
 	
 	// Enter Protected Mode
 	kputs("* Initializing Protected Mode\n");
@@ -78,32 +79,30 @@ void kernel_main(uint32_t mbresponse, multiboot1_infoptr* infos) {
 	// Init interrupts
 	kputs("* Initializing interrupts\n");
 	//idt_init();
+	//cpu_enable_interrupts();		// Interrupts töten, Karl!
+	//cpu_call_interrupt(49);		// Test
+	
+	// PCI
+	kputs("* Initializing PCI\n");
+	pci_init();	
 
+	// File system
+	kputs("* Initializing virtual file system\n");
+	//vfs_init();
+	// load init fs
+	// load configuration file
+
+	// GUI
+	kputs("* Initializing video\n");
+	gfx_init();
+
+	
 	// kinit_done:
 	kputs("* Initializing done\n");
-	
-	// Interrupts töten, Karl!
-	//cpu_enable_interrupts(); //	sti
-	
-	// Einen Software-Interrupt auslösen:
-	//cpu_call_interrupt(49);
 
-	// Scheduler
-	//init_scheduler();
-	
-	//gfx_init();
-	//gfx_clrscr(4);
-	/*
-	if (BgaIsAvailable()) {
-		kputs("gfx: bochs!\n");
-	}
-	else {
-		kputs("gfx: no bochs\n");
-	}
-	*/
 
-	puts("Entering kernel loop");
-
+	kputs("* Entering kernel loop");
+	//scheduler_init();
 	//kernel_loop();
 	//kernel_shutdown();
 	kernel_demo();
@@ -181,7 +180,7 @@ void print_cpuinfo(multiboot1_infoptr* infos) {
 	}
 	if (IS_BIT_SET(infos->flags,4) || IS_BIT_SET(infos->flags,5)) {
 		//char syms[12];			// flags[4] || flags[5]
-		kputs("[4]\syms:\t");kputnl();
+		kputs("[4]\tsyms:\t");kputnl();
 	}
 	if (IS_BIT_SET(infos->flags,6)) {
 		kputs("[6]\tmmap_length:\t");kputl(infos->mmap_length);kputnl();

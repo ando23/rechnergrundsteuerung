@@ -1,4 +1,4 @@
-// Copyright 2022-2023; for authors see bottom
+// Copyright 2022-2024; for authors see bottom
 // Licence: MIT
 
 #include "textmode.h"
@@ -30,8 +30,7 @@ void set_color(uint8_t col) {
 	cursor_col = col;
 }
 
-void set_cursor_position(uint16_t x, uint16_t y)
-{
+void set_cursor_position(uint16_t x, uint16_t y) {
 	if (x > KTEXTMAXX-1) x = KTEXTMAXX-1;
 	if (y > KTEXTMAXY-1) y = KTEXTMAXY-1;
 
@@ -123,7 +122,7 @@ void scrollup() {
 	memset16( KTEXTMEM + 2*KTEXTMAXX*(KTEXTMAXY-1), v, 2*KTEXTMAXX);
 }
 
-
+/*
 void printf(const char* pszFormat, ...) {
 	char pszBuffer[1024];
 	memset(pszBuffer, 0, sizeof(pszBuffer));
@@ -132,7 +131,7 @@ void printf(const char* pszFormat, ...) {
 	
 	puts(pszBuffer);
 }
-
+*/
 
 /* ---- Authors (in alphabetical order) ----
  * Andreas Herzig

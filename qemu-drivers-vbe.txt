@@ -1,0 +1,18 @@
+bochs-display options:
+  acpi-index=<uint32>    -  (default: 0)
+  addr=<int32>           - Slot and optional function number, example: 06.0 or 06 (default: -1)
+  big-endian-framebuffer=<bool>
+  edid=<bool>            -  (default: true)
+  failover_pair_id=<str>
+  multifunction=<bool>   - on/off (default: false)
+  refresh_rate=<uint32>  -  (default: 0)
+  rombar=<uint32>        -  (default: 1)
+  romfile=<str>
+  romsize=<uint32>       -  (default: 4294967295)
+  vgamem=<size>          -  (default: 16777216)
+  x-pcie-extcap-init=<bool> - on/off (default: true)
+  x-pcie-lnksta-dllla=<bool> - on/off (default: true)
+  xmax=<uint32>          -  (default: 0)
+  xres=<uint32>          -  (default: 0)
+  ymax=<uint32>          -  (default: 0)
+  yres=<uint32>          -  (default: 0)

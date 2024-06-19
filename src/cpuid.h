@@ -173,7 +173,7 @@ typedef struct cpu_info_t
 	// 06	Thermal und Power Management
 	// 07 00	Extended Features
 	// 07 01	Extended Features
-} STRUCT_PACKED cpu_info_t;
+} /*STRUCT_PACKED*/ cpu_info_t;
 
 /*
 typedef struct {

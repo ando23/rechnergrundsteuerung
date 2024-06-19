@@ -14,7 +14,12 @@ void cpu_enable_interrupts() {
 }
 
 void cpu_call_interrupt(uint16_t intNo) {
-	//asm volatile ("int 49" : : : "memory");
+	asm volatile (
+		"int 49" 	// WARUM nicht 'al'?
+		:
+		: "a"(intNo)
+		: "memory"
+	);
 }
 
 void cpu_halt() {
@@ -37,6 +42,14 @@ void cpu_out16(uint16_t port, uint16_t value) {
 		: 
 	);
 }
+void cpu_out32(uint16_t port, uint32_t value) {
+	asm volatile (
+		"out dx, eax"
+		:
+		: "d"(port), "a"(value)
+		: 
+	);
+}
 
 uint8_t cpu_in8(uint16_t port) {
 	uint8_t result;
@@ -53,6 +66,17 @@ uint16_t cpu_in16(uint16_t port) {
 	uint16_t result;
 	asm volatile (
 		"in ax, dx"
+		: "=a"(result)
+		: "d"(port)
+		:
+	);
+	return result;
+}
+
+uint32_t cpu_in32(uint16_t port) {
+	uint32_t result;
+	asm volatile (
+		"in eax, dx"
 		: "=a"(result)
 		: "d"(port)
 		:

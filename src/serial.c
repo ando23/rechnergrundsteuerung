@@ -186,6 +186,7 @@ void kputb_dec(uint8_t al) {
 	//kputs( kputb_dec_buf );
 }
 
+/*
 void kprintf(const char* pszFormat, ...) {
 	char pszBuffer[1024];
 	memset(pszBuffer, 0, sizeof(pszBuffer));
@@ -194,7 +195,7 @@ void kprintf(const char* pszFormat, ...) {
 	
 	kputs(pszBuffer);
 }
-
+*/
 
 /* ---- Authors (in alphabetical order) ----
  * Andreas Herzig

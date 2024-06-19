@@ -47,7 +47,7 @@ char* pad_string(char* outBuffer, size_t padding, char padding_char) {
 	if (padding == 0) return outBuffer;
 	for (size_t p = 0; p < padding; p++) {
 		*outBuffer = padding_char;
-		*outBuffer++;
+		outBuffer++;
 	}
 	return outBuffer;
 }

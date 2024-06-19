@@ -1,4 +1,4 @@
-// Copyright 2022-2023; for authors see bottom
+// Copyright 2022-2024; for authors see bottom
 // Licence: MIT
 
 #include "memory.h"
@@ -16,7 +16,7 @@ void gte_set(GDT_segment_descriptor_t* entry, uint32_t base, uint32_t limit, uin
 }
 
 GDT_descriptor_table_t	gdt_table;
-GDT_segment_descriptor_t gdt[32];
+GDT_segment_descriptor_t	gdt[32];
 
 
 void GDT_init() {
@@ -26,13 +26,22 @@ void GDT_init() {
 	gdt_table.limits = 32;
 	gdt_table.addr_entries = p;
 	
+	for (size_t i = 0; i < gdt_table.limits; i++) {
+		// so?
+		gte_set(&gdt[i], 0, 0, 0, 0);
+	}
+	
 	//NULL descriptor
 	gte_set(p++, 0, 0, 0, 0);
 	
 	// 0x08 Code Ring 0 LINEAR_CODE_SELECTOR
 	gte_set(p++, 0, 0xffffffff, 0b10011010, 0b1100);
+	//gte_set(&gdt[0x08], 0, 0, 0, 0);
+	
 	// 0x10 Data Ring 0 LINEAR_DATA_SELECTOR
 	gte_set(p++, 0, 0xffffffff, 0b10010010, 0b1100);
+	//gte_set(&gdt[0x10], 0, 0, 0, 0);
+	
 	// Code Ring 3
 	gte_set(p++, 0, 0xffffffff, 0b11111010, 0b1100);
 	// Data Ring 3
@@ -46,11 +55,23 @@ void GDT_init() {
 	gte_set(p++, 0, 0, 0, 0);
 	gte_set(p++, 0, 0, 0, 0);
 	gte_set(p++, 0, 0, 0, 0);
+	
 
-/*
-	asm ( "lgdt [GDT_Descriptor]" : : : "memory" );
-	reload_segments();
-*/
+	//asm ( "lgdt [gdt_table]"
+	asm volatile (
+		"	lgdt	[eax]	\r\n"
+		"	jmp	0x08:reload_CS1	\r\n"
+		"reload_CS1:	\r\n"
+		"	mov	ax, 0x10	\r\n"
+		"	mov	ds, ax	\r\n"
+		"	mov	es, ax	\r\n"
+		"	mov	fs, ax	\r\n"
+		"	mov	gs, ax	\r\n"
+		"	mov	ss, ax	\r\n"
+		:
+		: "a"(&gdt_table)
+		: "memory"
+	);
 }
 
 void reload_segments() {
@@ -61,8 +82,8 @@ void reload_segments() {
 	// 0x10 points at the new data selector
 	
 	asm volatile (
-	"	jmp   0x08:reload_CS	\r\n"
-	"reload_CS:	\r\n"
+	"	jmp   0x08:reload_CS2	\r\n"
+	"reload_CS2:	\r\n"
 	"	mov   ax, 0x10	\r\n"
 	"	mov   ds, ax	\r\n"
 	"	mov   es, ax	\r\n"

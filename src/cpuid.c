@@ -49,7 +49,7 @@ void check_cpu(cpu_info_t* data) {
 	
 	memset(data, 0, sizeof(data));
 	
-	for (int i=0; i<sizeof(data->vendor); i++)
+	for (size_t i=0; i<sizeof(data->vendor); i++)
 		data->vendor[i] = 0;
 
 	get_cpuid_string(CPUID_GETVENDORSTRING, data->func0result);

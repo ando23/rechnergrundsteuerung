@@ -12,11 +12,11 @@ ASMFLAGS=--32
 LINK=ld
 LDFLAGS=-T linker.ld -nostdlib --gc-sections -m elf_i386
 
-src_files = kernel.c memory.c string.c serial.c textmode.c cpu.c cpuid.c pit.c rtc.c gfx.c
-obj_files = $(OBJDIR)/kernel.o $(OBJDIR)/memory.o $(OBJDIR)/string.o $(OBJDIR)/serial.o $(OBJDIR)/textmode.o $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/pit.o $(OBJDIR)/rtc.o $(OBJDIR)/gfx.o
+src_files = kernel.c memory.c string.c serial.c textmode.c cpu.c cpuid.c idt.c pci.c pit.c rtc.c gfx.c
+obj_files = $(OBJDIR)/kernel.o $(OBJDIR)/memory.o $(OBJDIR)/string.o $(OBJDIR)/serial.o $(OBJDIR)/textmode.o $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/idt.o $(OBJDIR)/pci.o $(OBJDIR)/pit.o $(OBJDIR)/rtc.o $(OBJDIR)/gfx.o
 
 #set DBGTRIFAULT=-no-shutdown -no-reboot -d int
-EMUFLAGS = -m 16m -serial stdio -rtc base=localtime
+EMUFLAGS = -m 4m -serial stdio -rtc base=localtime
 #EMUVGAFLAGS = -vga std
 EMUVGAFLAGS = -device bochs-display
 #EMUVGAFLAGS = -device virtio-vga
@@ -44,24 +44,6 @@ $(OBJDIR)/boot.o : $(SRCDIR)/boot.asm
 
 #.c.o:
 #	$(CC) -MD -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
-
-#obj/kernel.o: src/kernel.c
-#	$(CC) -c $< -o $@ $(CFLAGS)
-#
-#obj/memory.o: src/memory.c
-#	$(CC) -c $< -o $@ $(CFLAGS)
-#
-#obj/serial.o: src/serial.c
-#	$(CC) -c $< -o $@ $(CFLAGS)
-#
-#obj/textmode.o: src/textmode.c
-#	$(CC) -c $< -o $@ $(CFLAGS)
-#	
-#obj/cpu.o: src/cpu.c
-#	$(CC) -c $< -o $@ $(CFLAGS)	
-#	
-#obj/gfx.o: src/gfx.c
-#	$(CC) -c $< -o $@ $(CFLAGS)
 
 # Compile
 $(OBJDIR)/%.o : $(SRCDIR)/%.c

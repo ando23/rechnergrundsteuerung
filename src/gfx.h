@@ -26,3 +26,4 @@ uint16_t BgaReadRegister(uint16_t IndexValue);
 int BgaIsAvailable(void);
 void BgaSetVideoMode(uint32_t Width, uint32_t Height, uint32_t BitDepth, bool UseLinearFrameBuffer, bool ClearVideoMemory);
 void BgaSetBank(uint16_t BankNumber);
+char* BgaGetFBAddr();

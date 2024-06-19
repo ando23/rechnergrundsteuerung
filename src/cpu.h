@@ -10,9 +10,11 @@ void cpu_halt();
 
 void cpu_out8(uint16_t port, uint8_t value);
 void cpu_out16(uint16_t port, uint16_t value);
+void cpu_out32(uint16_t port, uint32_t value);
 
 uint8_t cpu_in8(uint16_t port);
 uint16_t cpu_in16(uint16_t port);
+uint32_t cpu_in32(uint16_t port);
 
 
 void cpu_enable_A20();

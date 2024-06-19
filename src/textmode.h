@@ -43,7 +43,7 @@ void scrollup();
 //			%B	u8	hex
 //			%p	u32	hex (pointer)
 //			%s	string
-void printf(const char* pszFormat, ...);
+//void printf(const char* pszFormat, ...);
 
 
 
