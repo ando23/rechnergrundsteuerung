@@ -38,4 +38,7 @@ void kputhd(void* adresse, uint32_t anzahl);
 void kputb(uint8_t value);
 
 // Wert dezimal ausgeben
-void kputb_dec(uint8_t al);
+void kputl_dec(uint32_t);
+
+void kprintf(const char* pszFormat, ...);
+

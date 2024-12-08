@@ -1,0 +1,15 @@
+Spec
+
+
+Core0 ist für OS-Dienste
+
+
+Prozesse haben zwei Queues (in und out) für IPC
+zusätzlich Queues/Pipes für IO
+
+Synchrone Funktionen setzen Kommando in die Queue und machen yield()
+Während der Prozess schläft, wird die Kommando-Queue abgearbeitet, somit weniger Locks notwendig.
+
+Große Datenmengen gehen durch die IO-Queues, aber vermutlich zuviel umkopieren notwendig.
+
+Was ist mit Userspace-Diensten, z.B. FUSE?

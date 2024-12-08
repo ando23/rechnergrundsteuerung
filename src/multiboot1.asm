@@ -29,9 +29,10 @@ multiboot1_header:
 	dd	0
 	dd	0
 	dd	0
-	
-multiboot1_infoptr:
-	dq	0
+
+
+multiboot1_result:	dq	0
+multiboot1_infoptr:	dq	0
 
 
 

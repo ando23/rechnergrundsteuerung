@@ -1,9 +1,12 @@
-// Copyright 2022 Andreas Herzig
+// Copyright 2022-2024; for authors see bottom
 // Licence: MIT
 
 #include "serial.h"
 
+#include <stdarg.h>
+
 #include "cpu.h"
+#include "string.h"
 
 #define COM1	0x3F8
 #define COM2	0x2F8
@@ -53,8 +56,7 @@ void kputc(uint8_t al) {
 	cpu_out8( PORT, al );
 }
 
-void color_on()
-{
+void color_on() {
 	kputc( 0x1b );
 	kputc( '[' );
 	kputc( '3' );
@@ -77,6 +79,14 @@ void color2_on() {
 	kputc( 'm' );
 }
 
+void color3_on() {
+	kputc( 0x1b );
+	kputc( '[' );
+	kputc( '3' );
+	kputc( '1' );
+	kputc( 'm' );
+}
+
 
 // String ausgeben
 // input:	s	psz
@@ -89,7 +99,7 @@ void kputs(char* s) {
 // String ausgeben
 // input:	s
 void kputs2(char* s) {
-	while (s) {
+	while (*s) {
 		kputc(*s);
 		s++;
 	}
@@ -98,7 +108,8 @@ void kputs2(char* s) {
 // Newline ausgeben
 // input:	none
 void kputnl() {
-	kputc( 10 );
+	kputc( '\r' );
+	kputc( '\n' );
 }
 
 
@@ -121,9 +132,14 @@ void kputhexc(uint8_t al) {
 void kputl(uint32_t eax) {
 	kputc('0');
 	kputc('x');
+	
+	if (eax == 0) {
+		kputc('0');
+		return;
+	}
 
-	for (int i=4; i>=0; i--) {
-		uint32_t v = eax >> (4*i);
+	for (int i=3; i>=0; i--) {
+		uint32_t v = (eax >> (8*i));
 		kputhexc( (uint8_t)(v & 0xff) );
 	}
 }
@@ -132,7 +148,7 @@ void kputl(uint32_t eax) {
 void kputhd(void* adresse, uint32_t anzahl) {
 	//TODO schön machen
 	uint8_t* ptr = (uint8_t*)adresse;
-	for (int i=0; i<anzahl; i++) {
+	for (uint32_t i=0; i<anzahl; i++) {
 		if ((i&16) == 0) {
 			kputl(*((uint32_t*)ptr));
 			kputc(0x20);
@@ -159,28 +175,103 @@ void kputb(uint8_t value) {
 	kputhexc(value);
 }
 
+
 // Wert dezimal ausgeben
-// input:	al	8-Bit-Wert
-void kputb_dec(uint8_t al) {
-	char kputb_dec_buf[4] = {'0', 0,0,0};
-	char* ptr = kputb_dec_buf;
+void kputl_dec(uint32_t eax) {
+	char dec_buf[16] = {'0', 0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+	char* ptr = dec_buf;
+	
+	if (eax == 0) {
+		kputc('0');
+		return;
+	}
 	
 	// Einzelne Stellen herausfischen:
-	while (al > 0) {
-		uint8_t c = al % 10;
+	while (eax > 0) {
+		uint8_t c = eax % 10;
 		*ptr = c + '0';
 		ptr++;
-		al = al / 10;
+		eax = eax / 10;
 	}
 
 	// String umdreht ausgeben
-	//char outb [5];
-	//char* pout = outb;
-	for (char* rc = ptr-1; rc >= kputb_dec_buf; rc--) {
-		//*pout = *rc;
-		//pout++;
-		kputhexc(*rc);
+	for (char* rc = ptr-1; rc >= dec_buf; rc--) {
+		kputc(*rc);
 	}
-	//*pout = 0;
-	//kputs( kputb_dec_buf );
 }
+
+void kprintf(const char* format, ...) {
+	va_list argp;
+	va_start(argp, format);
+	while (*format != '\0') {
+		if (*format == '%') {
+			format++;
+			if (*format == '\0')
+				break;
+			if (*format == '%') {
+				kputc('%');
+			}
+			else if (*format == 'c') {
+				char char_to_print = va_arg(argp, int);
+				kputc(char_to_print);
+			}
+			else if (*format == 'd') {
+				uint32_t value = va_arg(argp, int);
+				kputl_dec(value);
+			}
+			else if (*format == 'x' || *format == 'p') {
+				uint32_t value = va_arg(argp, int);
+				kputl(value);
+			}
+			else if (*format == 's') {
+				uint32_t value = va_arg(argp, int);
+				if (value != 0)
+					kputs((char*)value);	// gefährlich
+			}
+			else {
+				//NOT_IMPLEMENTED_EXCEPTION;
+				break;
+			}
+		}
+		else if (*format == '^') {
+			format++;
+			if (*format == '7') {
+				color_off();
+			}
+			else if (*format == '1') {
+				color_on();
+			}
+			else if (*format == '2') {
+				color2_on();
+			}
+			else if (*format == '3') {
+				color3_on();
+			}
+			else {
+				kputc('^');
+				kputc(*format);
+			}
+		}
+		else if (*format == '\\') {
+			format++;
+			if (*format == '\0')
+				break;
+			switch (*format) {
+				case '\\':	kputc('\\'); break;
+				case 'r':	kputc('\r'); break;
+				case 'n':	kputc('\n'); break;
+				case 't':	kputc('\t'); break;
+			}
+		}
+		else {
+			kputc(*format);
+		}
+		format++;
+	}
+	va_end(argp);
+}
+
+
+/* ---- Authors (in alphabetical order) ----
+ * Andreas Herzig
+ */
